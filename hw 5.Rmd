@@ -1,0 +1,77 @@
+---
+title: "hw 5"
+author: "Wurongyan Zhang"
+date: "11/5/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## problem 1
+
+```{r}
+library(tidyverse)
+
+set.seed(10)
+
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+```
+```{r,warning=FALSE}
+summary(is.na(iris_with_missing)) %>% 
+  knitr::kable()
+```
+
+As we can see from the summary above, the data set iris_with_missing has 20 missing values in each of the 5 variables.
+
+```{r}
+na_func = function(x){
+  if(is.character(x)){
+    x=replace_na(x,"virginica")
+  }
+  else if(is.numeric(x)){
+    x=replace_na(x, round(mean(x,na.rm=TRUE),1))
+  }
+  x
+}
+
+iris=map_dfr(iris_with_missing,na_func)
+
+summary(is.na(iris)) %>% 
+  knitr::kable()
+```
+
+As we can see from the second table, there are no missing values after the function.
+
+## problem 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
