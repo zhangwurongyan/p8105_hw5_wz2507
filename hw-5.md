@@ -9,14 +9,14 @@ Wurongyan Zhang
 library(tidyverse)
 ```
 
-    ## ─ Attaching packages ────────────────────────── tidyverse 1.2.1 ─
+    ## ─ Attaching packages ─── tidyverse 1.2.1 ─
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.2
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ─ Conflicts ──────────────────────────── tidyverse_conflicts() ─
+    ## ─ Conflicts ───── tidyverse_conflicts() ─
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -50,7 +50,7 @@ na_func = function(x){
     x=replace_na(x,"virginica")
   }
   else if(is.numeric(x)){
-    x=replace_na(x, round(mean(x,na.rm=TRUE),1))
+    x=replace_na(x, round(mean(x,na.rm=TRUE),digits=1))
   }
   x
 }
@@ -74,18 +74,39 @@ the function.
 ``` r
 file = list.files("data")
 
-file_func=function(x){
-  path=str_c("./data/",x)
-  read_csv(path)
- }
-
-file_data = purrr::map_dfr(file, file_func) %>% 
+file_data = purrr::map_dfr( str_c("./data/",file), read_csv) %>% 
  janitor::clean_names() %>% 
   mutate(file_name=file) %>% 
   mutate(file_name=str_remove(file_name,".csv")) %>% 
   separate(file_name, into = c("arm","subject_id"),sep="_") %>% arrange(arm,subject_id) %>% 
   select(subject_id, arm, everything())
+  
+ file_data %>% 
+   knitr::kable()
 ```
+
+| subject\_id | arm | week\_1 | week\_2 | week\_3 | week\_4 | week\_5 | week\_6 | week\_7 | week\_8 |
+| :---------- | :-- | ------: | ------: | ------: | ------: | ------: | ------: | ------: | ------: |
+| 01          | con |    0.20 |  \-1.31 |    0.66 |    1.96 |    0.23 |    1.09 |    0.05 |    1.94 |
+| 02          | con |    1.13 |  \-0.88 |    1.07 |    0.17 |  \-0.83 |  \-0.31 |    1.58 |    0.44 |
+| 03          | con |    1.77 |    3.11 |    2.22 |    3.26 |    3.31 |    0.89 |    1.88 |    1.01 |
+| 04          | con |    1.04 |    3.66 |    1.22 |    2.33 |    1.47 |    2.70 |    1.87 |    1.66 |
+| 05          | con |    0.47 |  \-0.58 |  \-0.09 |  \-1.37 |  \-0.32 |  \-2.17 |    0.45 |    0.48 |
+| 06          | con |    2.37 |    2.50 |    1.59 |  \-0.16 |    2.08 |    3.07 |    0.78 |    2.35 |
+| 07          | con |    0.03 |    1.21 |    1.13 |    0.64 |    0.49 |  \-0.12 |  \-0.07 |    0.46 |
+| 08          | con |  \-0.08 |    1.42 |    0.09 |    0.36 |    1.18 |  \-1.16 |    0.33 |  \-0.44 |
+| 09          | con |    0.08 |    1.24 |    1.44 |    0.41 |    0.95 |    2.75 |    0.30 |    0.03 |
+| 10          | con |    2.14 |    1.15 |    2.52 |    3.44 |    4.26 |    0.97 |    2.73 |  \-0.53 |
+| 01          | exp |    3.05 |    3.67 |    4.84 |    5.80 |    6.33 |    5.46 |    6.38 |    5.91 |
+| 02          | exp |  \-0.84 |    2.63 |    1.64 |    2.58 |    1.24 |    2.32 |    3.11 |    3.78 |
+| 03          | exp |    2.15 |    2.08 |    1.82 |    2.84 |    3.36 |    3.61 |    3.37 |    3.74 |
+| 04          | exp |  \-0.62 |    2.54 |    3.78 |    2.73 |    4.49 |    5.82 |    6.00 |    6.49 |
+| 05          | exp |    0.70 |    3.33 |    5.34 |    5.57 |    6.90 |    6.66 |    6.24 |    6.95 |
+| 06          | exp |    3.73 |    4.08 |    5.40 |    6.41 |    4.87 |    6.09 |    7.66 |    5.83 |
+| 07          | exp |    1.18 |    2.35 |    1.23 |    1.17 |    2.02 |    1.61 |    3.13 |    4.88 |
+| 08          | exp |    1.37 |    1.43 |    1.84 |    3.60 |    3.80 |    4.72 |    4.68 |    5.70 |
+| 09          | exp |  \-0.40 |    1.08 |    2.66 |    2.70 |    2.80 |    2.64 |    3.51 |    3.27 |
+| 10          | exp |    1.09 |    2.80 |    2.80 |    4.30 |    2.25 |    6.57 |    6.09 |    4.64 |
 
 ``` r
 file_data_week=file_data %>% 
@@ -105,3 +126,104 @@ file_data_week %>%
 \#comments
 
 ## problem 3
+
+``` r
+set.seed(100)
+
+sim_regression= function(beta1,n=30, beta0=2,sigma_squared=50){
+  sim_data= tibble(
+    x=rnorm(n,mean=0, sd=1),
+    y=beta0+beta1*x+rnorm(n,mean=0,sd=sqrt(sigma_squared))
+  )
+  
+  ls_fit= lm(y~x, data=sim_data) %>% 
+    broom::tidy() %>% 
+    select(term, estimate, p.value) %>% 
+    mutate(term=recode(term, "x"="beta1_hat")) %>% 
+    filter(term=="beta1_hat") 
+  
+}
+```
+
+``` r
+sim_results=
+  rerun(10000, sim_regression(beta1=0)) %>%bind_rows()
+```
+
+``` r
+sim_results16= 
+  tibble(beta1=c(1:6)) %>% 
+  mutate(model= map(beta1,~rerun(100, sim_regression(beta1=.x)))) %>% 
+  unnest() %>% 
+  unnest
+```
+
+    ## Warning: `cols` is now required.
+    ## Please use `cols = c(model)`
+    
+    ## Warning: `cols` is now required.
+    ## Please use `cols = c(model)`
+
+``` r
+sim_results16 %>% 
+  group_by(beta1) %>% 
+  summarise(total=n(),
+            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+geom_line()+labs(title = "Association between effect size and power", x= "effect size(beta 1)", y= "power")
+```
+
+![](hw-5_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+average = 
+  sim_results16 %>% 
+  pivot_wider(names_from = term,
+              values_from = estimate) %>% 
+  group_by(beta1) %>% 
+  summarise(avg_beta=mean(beta1_hat))
+```
+
+``` r
+null_reject =
+  sim_results16 %>% 
+  pivot_wider(names_from = term,
+              values_from = estimate) %>% 
+  filter(p.value<0.05) %>% 
+  group_by(beta1) %>% 
+  summarise(avg_beta_null=mean(beta1_hat))
+```
+
+``` r
+average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+    
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+
+    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+
+![](hw-5_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+``` r
+null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+
+    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+
+![](hw-5_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
