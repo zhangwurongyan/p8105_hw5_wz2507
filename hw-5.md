@@ -9,14 +9,14 @@ Wurongyan Zhang
 library(tidyverse)
 ```
 
-    ## ─ Attaching packages ─── tidyverse 1.2.1 ─
+    ## ─ Attaching packages ───────────────────── tidyverse 1.2.1 ─
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.2
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ─ Conflicts ───── tidyverse_conflicts() ─
+    ## ─ Conflicts ─────────────────────── tidyverse_conflicts() ─
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -40,6 +40,21 @@ summary(is.na(iris_with_missing)) %>%
 |  | Mode :logical | Mode :logical | Mode :logical | Mode :logical | Mode :logical |
 |  | FALSE:130     | FALSE:130     | FALSE:130     | FALSE:130     |   FALSE:130   |
 |  | TRUE :20      | TRUE :20      | TRUE :20      | TRUE :20      |   TRUE :20    |
+
+``` r
+summary(iris_with_missing) %>% 
+  knitr::kable()
+```
+
+|  | Sepal.Length  |  Sepal.Width  | Petal.Length  |  Petal.Width  |     Species      |
+|  | :-----------: | :-----------: | :-----------: | :-----------: | :--------------: |
+|  |  Min. :4.300  |  Min. :2.000  |  Min. :1.000  |  Min. :0.100  |    Length:150    |
+|  | 1st Qu.:5.100 | 1st Qu.:2.800 | 1st Qu.:1.600 | 1st Qu.:0.300 | Class :character |
+|  | Median :5.700 | Median :3.000 | Median :4.400 | Median :1.300 | Mode :character  |
+|  |  Mean :5.819  |  Mean :3.075  |  Mean :3.765  |  Mean :1.192  |        NA        |
+|  | 3rd Qu.:6.400 | 3rd Qu.:3.400 | 3rd Qu.:5.100 | 3rd Qu.:1.800 |        NA        |
+|  |  Max. :7.900  |  Max. :4.400  |  Max. :6.900  |  Max. :2.500  |        NA        |
+|  |   NA’s :20    |   NA’s :20    |   NA’s :20    |   NA’s :20    |        NA        |
 
 As we can see from the summary above, the data set iris\_with\_missing
 has 20 missing values in each of the 5 variables.
@@ -153,7 +168,7 @@ sim_results=
 ``` r
 sim_results16= 
   tibble(beta1=c(1:6)) %>% 
-  mutate(model= map(beta1,~rerun(100, sim_regression(beta1=.x)))) %>% 
+  mutate(model= map(beta1,~rerun(10000, sim_regression(beta1=.x)))) %>% 
   unnest() %>% 
   unnest
 ```
@@ -173,6 +188,9 @@ sim_results16 %>%
 
 ![](hw-5_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
+The relationship between effect size and power is positive and at a
+certain point the rate of increasing will decrease.
+
 ``` r
 average = 
   sim_results16 %>% 
@@ -186,14 +204,11 @@ average =
 null_reject =
   sim_results16 %>% 
   pivot_wider(names_from = term,
-              values_from = estimate) %>% 
-  filter(p.value<0.05) %>% 
-  group_by(beta1) %>% 
-  summarise(avg_beta_null=mean(beta1_hat))
+              values_from = estimate) %>% filter(p.value<0.05) %>% group_by(beta1) %>% summarise(avg_beta_null=mean(beta1_hat))
 ```
 
 ``` r
-average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()
+average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
 ```
 
     ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
@@ -211,7 +226,7 @@ average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()
 ![](hw-5_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 ``` r
-null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()
+null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
 ```
 
     ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
@@ -227,3 +242,48 @@ null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth(
     ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
 
 ![](hw-5_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+
+As we can see from those two plots, the rejected sample’s average
+beta1\_hat is always higher than the true value of beta\_1, however, at
+certain point, the sample average beta1\_hat get closer to true value as
+beta\_1 increases.
+
+``` r
+ggplot() + 
+  geom_point(aes(x = beta1, y = avg_beta, color = "red"), 
+             data = average, size = 4, alpha = .4) +
+  geom_smooth(aes(x = beta1, y = avg_beta_null, color = "red"), 
+              data = null_reject, alpha = .5) +
+  geom_point(aes(x = beta1, y = avg_beta_null, color = "blue"), 
+             data = null_reject, size = 4, alpha = .4) +geom_smooth(aes(x = beta1, y = avg_beta_null, color = "blue"), 
+             data = null_reject, alpha = .5) +
+  scale_color_identity(breaks = c("red", "blue"),
+                       labels = c("True values", "Sample values"),
+                       guide = "legend")
+```
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+    
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+
+    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+
+    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+
+![](hw-5_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->

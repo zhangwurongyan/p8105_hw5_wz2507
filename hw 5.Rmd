@@ -25,6 +25,9 @@ iris_with_missing = iris %>%
 ```{r,warning=FALSE}
 summary(is.na(iris_with_missing)) %>% 
   knitr::kable()
+
+summary(iris_with_missing) %>% 
+  knitr::kable()
 ```
 
 As we can see from the summary above, the data set iris_with_missing has 20 missing values in each of the 5 variables.
@@ -108,7 +111,7 @@ sim_results=
 ```{r}
 sim_results16= 
   tibble(beta1=c(1:6)) %>% 
-  mutate(model= map(beta1,~rerun(100, sim_regression(beta1=.x)))) %>% 
+  mutate(model= map(beta1,~rerun(10000, sim_regression(beta1=.x)))) %>% 
   unnest() %>% 
   unnest
 ```
@@ -121,6 +124,8 @@ sim_results16 %>%
 
   
 ```
+
+The relationship between effect size and power is positive and at a certain point the rate of increasing will decrease.
 
 ```{r}
 average = 
@@ -135,22 +140,35 @@ average =
 null_reject =
   sim_results16 %>% 
   pivot_wider(names_from = term,
-              values_from = estimate) %>% 
-  filter(p.value<0.05) %>% 
-  group_by(beta1) %>% 
-  summarise(avg_beta_null=mean(beta1_hat))
+              values_from = estimate) %>% filter(p.value<0.05) %>% group_by(beta1) %>% summarise(avg_beta_null=mean(beta1_hat))
 ```
 
 ```{r}
-average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()
+average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
 
-null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()
+null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
+
+
 ```
 
 
+As we can see from those two plots, the rejected sample's average beta1_hat is always higher than the true value of beta_1, however, at certain point, the sample average beta1_hat get closer to true value as beta_1 increases.
 
 
 
+```{r}
+ggplot() + 
+  geom_point(aes(x = beta1, y = avg_beta, color = "red"), 
+             data = average, size = 4, alpha = .4) +
+  geom_smooth(aes(x = beta1, y = avg_beta_null, color = "red"), 
+              data = null_reject, alpha = .5) +
+  geom_point(aes(x = beta1, y = avg_beta_null, color = "blue"), 
+             data = null_reject, size = 4, alpha = .4) +geom_smooth(aes(x = beta1, y = avg_beta_null, color = "blue"), 
+             data = null_reject, alpha = .5) +
+  scale_color_identity(breaks = c("red", "blue"),
+                       labels = c("True values", "Sample values"),
+                       guide = "legend")
+```
 
 
 
