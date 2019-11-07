@@ -9,14 +9,14 @@ Wurongyan Zhang
 library(tidyverse)
 ```
 
-    ## ─ Attaching packages ───────────────────── tidyverse 1.2.1 ─
+    ## ─ Attaching packages ──────────────────── tidyverse 1.2.1 ─
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.2
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ─ Conflicts ─────────────────────── tidyverse_conflicts() ─
+    ## ─ Conflicts ───────────────────── tidyverse_conflicts() ─
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -31,15 +31,17 @@ iris_with_missing = iris %>%
 ```
 
 ``` r
-summary(is.na(iris_with_missing)) %>% 
+colSums(is.na(iris_with_missing)) %>% 
   knitr::kable()
 ```
 
-|  | Sepal.Length  | Sepal.Width   | Petal.Length  | Petal.Width   |    Species    |
-|  | :------------ | :------------ | :------------ | :------------ | :-----------: |
-|  | Mode :logical | Mode :logical | Mode :logical | Mode :logical | Mode :logical |
-|  | FALSE:130     | FALSE:130     | FALSE:130     | FALSE:130     |   FALSE:130   |
-|  | TRUE :20      | TRUE :20      | TRUE :20      | TRUE :20      |   TRUE :20    |
+|              |  x |
+| ------------ | -: |
+| Sepal.Length | 20 |
+| Sepal.Width  | 20 |
+| Petal.Length | 20 |
+| Petal.Width  | 20 |
+| Species      | 20 |
 
 ``` r
 summary(iris_with_missing) %>% 
@@ -72,17 +74,34 @@ na_func = function(x){
 
 iris=map_dfr(iris_with_missing,na_func)
 
-summary(is.na(iris))%>% 
+summary(iris)%>% 
   knitr::kable()
 ```
 
-|  | Sepal.Length  | Sepal.Width   | Petal.Length  | Petal.Width   |    Species    |
-|  | :------------ | :------------ | :------------ | :------------ | :-----------: |
-|  | Mode :logical | Mode :logical | Mode :logical | Mode :logical | Mode :logical |
-|  | FALSE:150     | FALSE:150     | FALSE:150     | FALSE:150     |   FALSE:150   |
+|  | Sepal.Length  |  Sepal.Width  | Petal.Length  |  Petal.Width  |     Species      |
+|  | :-----------: | :-----------: | :-----------: | :-----------: | :--------------: |
+|  |  Min. :4.300  |  Min. :2.000  |  Min. :1.000  |  Min. :0.100  |    Length:150    |
+|  | 1st Qu.:5.125 | 1st Qu.:2.825 | 1st Qu.:1.700 | 1st Qu.:0.400 | Class :character |
+|  | Median :5.800 | Median :3.100 | Median :4.000 | Median :1.200 | Mode :character  |
+|  |  Mean :5.817  |  Mean :3.079  |  Mean :3.770  |  Mean :1.193  |        NA        |
+|  | 3rd Qu.:6.375 | 3rd Qu.:3.275 | 3rd Qu.:4.975 | 3rd Qu.:1.800 |        NA        |
+|  |  Max. :7.900  |  Max. :4.400  |  Max. :6.900  |  Max. :2.500  |        NA        |
 
-As we can see from the second table, there are no missing values after
-the function.
+``` r
+colSums(is.na(iris)) %>% 
+  knitr::kable()
+```
+
+|              | x |
+| ------------ | -: |
+| Sepal.Length | 0 |
+| Sepal.Width  | 0 |
+| Petal.Length | 0 |
+| Petal.Width  | 0 |
+| Species      | 0 |
+
+As we can see from the second table, there is no missing values after
+the function of replacement.
 
 ## problem 2
 
@@ -123,6 +142,8 @@ file_data = purrr::map_dfr( str_c("./data/",file), read_csv) %>%
 | 09          | exp |  \-0.40 |    1.08 |    2.66 |    2.70 |    2.80 |    2.64 |    3.51 |    3.27 |
 | 10          | exp |    1.09 |    2.80 |    2.80 |    4.30 |    2.25 |    6.57 |    6.09 |    4.64 |
 
+The data frame after cleaning is shown above.
+
 ``` r
 file_data_week=file_data %>% 
   pivot_longer(week_1:week_8,
@@ -136,9 +157,14 @@ file_data_week %>%
   labs(title = "Observations on each subject over time")
 ```
 
-![](hw-5_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-\#comments
+We can see from the plot that the observation values for experimental
+group are higher than control group on average for each person in each
+week on average. The values of experimental and control groups were
+similar at week 1 but the experimental group increased later on.
+Moreover, the experimental group shows increasing trend on values but
+the control group only fluctuate without increasing or decreasing trend.
 
 ## problem 3
 
@@ -161,11 +187,13 @@ sim_regression= function(beta1,n=30, beta0=2,sigma_squared=50){
 ```
 
 ``` r
+#generate 10000 datasets from the model
 sim_results=
   rerun(10000, sim_regression(beta1=0)) %>%bind_rows()
 ```
 
 ``` r
+#repeat above for beta1=1,2,3,4,5,6
 sim_results16= 
   tibble(beta1=c(1:6)) %>% 
   mutate(model= map(beta1,~rerun(10000, sim_regression(beta1=.x)))) %>% 
@@ -183,13 +211,27 @@ sim_results16=
 sim_results16 %>% 
   group_by(beta1) %>% 
   summarise(total=n(),
-            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+geom_line()+labs(title = "Association between effect size and power", x= "effect size(beta 1)", y= "power")
+            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+geom_smooth(color="red")+labs(title = "Association between effect size and power", x= "effect size(beta 1)", y= "power")
 ```
 
-![](hw-5_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+    
+    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
+    ## parametric, : Chernobyl! trL>n 6
+
+    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+
+    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+
+![](hw-5_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 The relationship between effect size and power is positive and at a
-certain point the rate of increasing will decrease.
+certain point the rate of increasing will decrease. Thus increase
+\(\beta_1\) would increase power but the increase would not be very
+significant when \(\beta_1\) reaches certain value.
 
 ``` r
 average = 
@@ -223,7 +265,7 @@ average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(ti
 
     ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
 
-![](hw-5_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 ``` r
 null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
@@ -241,49 +283,14 @@ null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth(
 
     ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
 
-![](hw-5_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-14-2.png)<!-- --> Is the sample
+average of β̂ 1 across tests for which the null is rejected
+approximately equal to the true value of β1? Why or why not?
 
-As we can see from those two plots, the rejected sample’s average
-beta1\_hat is always higher than the true value of beta\_1, however, at
-certain point, the sample average beta1\_hat get closer to true value as
-beta\_1 increases.
-
-``` r
-ggplot() + 
-  geom_point(aes(x = beta1, y = avg_beta, color = "red"), 
-             data = average, size = 4, alpha = .4) +
-  geom_smooth(aes(x = beta1, y = avg_beta_null, color = "red"), 
-              data = null_reject, alpha = .5) +
-  geom_point(aes(x = beta1, y = avg_beta_null, color = "blue"), 
-             data = null_reject, size = 4, alpha = .4) +geom_smooth(aes(x = beta1, y = avg_beta_null, color = "blue"), 
-             data = null_reject, alpha = .5) +
-  scale_color_identity(breaks = c("red", "blue"),
-                       labels = c("True values", "Sample values"),
-                       guide = "legend")
-```
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-    
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
-
-    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
-
-    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
-
-![](hw-5_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+As we can see from those two plots, sample average of \(\hat\beta_1\)
+for which the null is rejected is not equal to the true value of
+\(\beta_1\), and always higher than the true value of \(\beta_1\).
+However, at certain point, in our example approximately when \(\beta_1\)
+equals to 6, the sample average of \(\hat\beta_1\) is approximately
+equals to the true value of \(\beta_1\). This can be explained by the
+power.
