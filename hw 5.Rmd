@@ -3,6 +3,9 @@ title: "hw 5"
 author: "Wurongyan Zhang"
 date: "11/5/2019"
 output: github_document
+header-includes:
+   - \usepackage{amsmath,amsthm,amssymb}
+   - \usepackage{enumitem}
 ---
 
 ```{r setup, include=FALSE}
@@ -28,11 +31,6 @@ colSums(is.na(iris_with_missing)) %>%
 ```
 
 
-```{r,warning=FALSE}
-summary(iris_with_missing) %>% 
-  knitr::kable()
-```
-
 As we can see from the summary above, the data set iris_with_missing has 20 missing values in each of the 5 variables.
 
 ```{r}
@@ -48,8 +46,6 @@ na_func = function(x){
 
 iris=map_dfr(iris_with_missing,na_func)
 
-summary(iris)%>% 
-  knitr::kable()
 ```
 
 ```{r}
@@ -119,7 +115,7 @@ sim_results=
   rerun(10000, sim_regression(beta1=0)) %>%bind_rows()
 ```
 
-```{r}
+```{r, warning=FALSE}
 #repeat above for beta1=1,2,3,4,5,6
 sim_results16= 
   tibble(beta1=c(1:6)) %>% 
@@ -128,7 +124,7 @@ sim_results16=
   unnest
 ```
 
-```{r}
+```{r,warning=FALSE}
 sim_results16 %>% 
   group_by(beta1) %>% 
   summarise(total=n(),
@@ -155,7 +151,7 @@ null_reject =
               values_from = estimate) %>% filter(p.value<0.05) %>% group_by(beta1) %>% summarise(avg_beta_null=mean(beta1_hat))
 ```
 
-```{r}
+```{r,message=FALSE, warning=FALSE}
 average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
 
 null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")

@@ -3,6 +3,10 @@ hw 5
 Wurongyan Zhang
 11/5/2019
 
+
+
+
+
 ## problem 1
 
 ``` r
@@ -43,21 +47,6 @@ colSums(is.na(iris_with_missing)) %>%
 | Petal.Width  | 20 |
 | Species      | 20 |
 
-``` r
-summary(iris_with_missing) %>% 
-  knitr::kable()
-```
-
-|  | Sepal.Length  |  Sepal.Width  | Petal.Length  |  Petal.Width  |     Species      |
-|  | :-----------: | :-----------: | :-----------: | :-----------: | :--------------: |
-|  |  Min. :4.300  |  Min. :2.000  |  Min. :1.000  |  Min. :0.100  |    Length:150    |
-|  | 1st Qu.:5.100 | 1st Qu.:2.800 | 1st Qu.:1.600 | 1st Qu.:0.300 | Class :character |
-|  | Median :5.700 | Median :3.000 | Median :4.400 | Median :1.300 | Mode :character  |
-|  |  Mean :5.819  |  Mean :3.075  |  Mean :3.765  |  Mean :1.192  |        NA        |
-|  | 3rd Qu.:6.400 | 3rd Qu.:3.400 | 3rd Qu.:5.100 | 3rd Qu.:1.800 |        NA        |
-|  |  Max. :7.900  |  Max. :4.400  |  Max. :6.900  |  Max. :2.500  |        NA        |
-|  |   NA’s :20    |   NA’s :20    |   NA’s :20    |   NA’s :20    |        NA        |
-
 As we can see from the summary above, the data set iris\_with\_missing
 has 20 missing values in each of the 5 variables.
 
@@ -73,19 +62,7 @@ na_func = function(x){
 }
 
 iris=map_dfr(iris_with_missing,na_func)
-
-summary(iris)%>% 
-  knitr::kable()
 ```
-
-|  | Sepal.Length  |  Sepal.Width  | Petal.Length  |  Petal.Width  |     Species      |
-|  | :-----------: | :-----------: | :-----------: | :-----------: | :--------------: |
-|  |  Min. :4.300  |  Min. :2.000  |  Min. :1.000  |  Min. :0.100  |    Length:150    |
-|  | 1st Qu.:5.125 | 1st Qu.:2.825 | 1st Qu.:1.700 | 1st Qu.:0.400 | Class :character |
-|  | Median :5.800 | Median :3.100 | Median :4.000 | Median :1.200 | Mode :character  |
-|  |  Mean :5.817  |  Mean :3.079  |  Mean :3.770  |  Mean :1.193  |        NA        |
-|  | 3rd Qu.:6.375 | 3rd Qu.:3.275 | 3rd Qu.:4.975 | 3rd Qu.:1.800 |        NA        |
-|  |  Max. :7.900  |  Max. :4.400  |  Max. :6.900  |  Max. :2.500  |        NA        |
 
 ``` r
 colSums(is.na(iris)) %>% 
@@ -157,7 +134,7 @@ file_data_week %>%
   labs(title = "Observations on each subject over time")
 ```
 
-![](hw-5_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 We can see from the plot that the observation values for experimental
 group are higher than control group on average for each person in each
@@ -201,12 +178,6 @@ sim_results16=
   unnest
 ```
 
-    ## Warning: `cols` is now required.
-    ## Please use `cols = c(model)`
-    
-    ## Warning: `cols` is now required.
-    ## Please use `cols = c(model)`
-
 ``` r
 sim_results16 %>% 
   group_by(beta1) %>% 
@@ -216,17 +187,7 @@ sim_results16 %>%
 
     ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-    
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
-
-    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
-
-![](hw-5_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 The relationship between effect size and power is positive and at a
 certain point the rate of increasing will decrease. Thus increase
@@ -265,7 +226,7 @@ average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(ti
 
     ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
 
-![](hw-5_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](hw-5_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
@@ -283,7 +244,7 @@ null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth(
 
     ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
 
-![](hw-5_files/figure-gfm/unnamed-chunk-14-2.png)<!-- --> Is the sample
+![](hw-5_files/figure-gfm/unnamed-chunk-13-2.png)<!-- --> Is the sample
 average of β̂ 1 across tests for which the null is rejected
 approximately equal to the true value of β1? Why or why not?
 
