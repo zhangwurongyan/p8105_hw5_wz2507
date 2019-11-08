@@ -2,7 +2,7 @@
 title: "hw 5"
 author: "Wurongyan Zhang"
 date: "11/5/2019"
-output: github_document
+output: pdf_document
 header-includes:
    - \usepackage{amsmath,amsthm,amssymb}
    - \usepackage{enumitem}
@@ -17,6 +17,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(tidyverse)
 library(ggplot2)
+library(ggridges)
+library(gridExtra)
 
 set.seed(10)
 
@@ -152,15 +154,16 @@ null_reject =
 ```
 
 ```{r,message=FALSE, warning=FALSE}
-average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
+plot1=average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
 
-null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
+plot2=null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
 
+grid.arrange(plot1,plot2, nrow = 1)
 
 ```
-Is the sample average of β̂ 1 across tests for which the null is rejected approximately equal to the true value of β1? Why or why not?
 
-As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power.
+
+As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and the sample average is always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power that as true value of $\beta_1$ increases, the probability of the sample to reject the null hypothesis($\beta_1=0$) given that the null hypothesis is false increases. Therefore smaller average $\hat\beta_1$ is needed in order to reject the null hypothesis.
 
 
 
