@@ -89,7 +89,7 @@ file_data_week %>%
   
 ```
 
-We can see from the plot that the observation values for experimental group are higher than control group on average for each person in each week on average. The values of experimental and control groups were similar at week 1 but the experimental group increased later on. Moreover, the experimental group shows increasing trend on values but the control group only fluctuate without increasing or decreasing trend. 
+We can see from the plot that the observation values for experimental group are higher than control group on average for each person in each week on average. The values of experimental and control groups were similar at week 1 but the experimental group increased later on. Moreover, the experimental group shows increasing trend on values but the control group only fluctuate without an increasing or decreasing trend. 
 
 ## problem 3
 
@@ -163,10 +163,7 @@ grid.arrange(plot1,plot2, nrow = 1)
 ```
 
 
-As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and the sample average is always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power that as true value of $\beta_1$ increases, the probability of the sample to reject the null hypothesis($\beta_1=0$) given that the null hypothesis is false increases. Therefore smaller average $\hat\beta_1$ is needed in order to reject the null hypothesis.
-
-
-
+As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and the sample average is always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power and the increase of effective size that as true value of $\beta_1$ increases, the probability of the sample to reject the null hypothesis($\beta_1=0$) given that the null hypothesis is false increases. Therefore smaller average $\hat\beta_1$ is needed in order to reject the null hypothesis.
 
 
 
