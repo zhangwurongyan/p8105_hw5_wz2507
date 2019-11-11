@@ -11,21 +11,9 @@ Wurongyan Zhang
 
 ``` r
 library(tidyverse)
-```
-
-    ## ─ Attaching packages ──────────────────── tidyverse 1.2.1 ─
-
-    ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.2
-    ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
-    ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
-    ## ✔ readr   1.3.1     ✔ forcats 0.4.0
-
-    ## ─ Conflicts ───────────────────── tidyverse_conflicts() ─
-    ## ✖ dplyr::filter() masks stats::filter()
-    ## ✖ dplyr::lag()    masks stats::lag()
-
-``` r
 library(ggplot2)
+library(ggridges)
+library(gridExtra)
 
 set.seed(10)
 
@@ -141,7 +129,8 @@ group are higher than control group on average for each person in each
 week on average. The values of experimental and control groups were
 similar at week 1 but the experimental group increased later on.
 Moreover, the experimental group shows increasing trend on values but
-the control group only fluctuate without increasing or decreasing trend.
+the control group only fluctuate without an increasing or decreasing
+trend.
 
 ## problem 3
 
@@ -166,7 +155,8 @@ sim_regression= function(beta1,n=30, beta0=2,sigma_squared=50){
 ``` r
 #generate 10000 datasets from the model
 sim_results=
-  rerun(10000, sim_regression(beta1=0)) %>%bind_rows()
+  rerun(10000, sim_regression(beta1=0)) %>%
+  bind_rows()
 ```
 
 ``` r
@@ -182,7 +172,10 @@ sim_results16=
 sim_results16 %>% 
   group_by(beta1) %>% 
   summarise(total=n(),
-            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+geom_smooth(color="red")+labs(title = "Association between effect size and power", x= "effect size(beta 1)", y= "power")
+            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+
+  geom_smooth(color="red")+
+  labs( title = "Association between effect size and power", 
+              x= "effect size(beta 1)", y= "power")
 ```
 
     ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
@@ -208,50 +201,56 @@ null_reject =
   sim_results16 %>% 
   pivot_wider(names_from = term,
               values_from = estimate) %>% filter(p.value<0.05) %>% group_by(beta1) %>% summarise(avg_beta_null=mean(beta1_hat))
+
+# average estimation 
+average %>% 
+  knitr::kable()
 ```
+
+| beta1 | avg\_beta |
+| ----: | --------: |
+|     1 | 0.9879664 |
+|     2 | 1.9881544 |
+|     3 | 2.9882483 |
+|     4 | 4.0007868 |
+|     5 | 4.9933934 |
+|     6 | 5.9985428 |
 
 ``` r
-average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
+# average estimation of rejected data
+null_reject %>% 
+  knitr::kable()
 ```
 
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
+| beta1 | avg\_beta\_null |
+| ----: | --------------: |
+|     1 |        2.964758 |
+|     2 |        3.403373 |
+|     3 |        3.851496 |
+|     4 |        4.423086 |
+|     5 |        5.177751 |
+|     6 |        6.066117 |
 
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-    
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
+``` r
+plot1=average %>% ggplot(aes(x=beta1, y=avg_beta))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta", x="beta 1", y="average of beta 1 hat")
 
-    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
+plot2=null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
 
-    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
+grid.arrange(plot1,plot2, nrow = 1)
+```
 
 ![](hw-5_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
-``` r
-null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_smooth()+labs(title="Relationship between estimation and true beta on rejected data", x="beta 1", y="average of beta 1 hat")
-```
-
-    ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric =
-    ## parametric, : Chernobyl! trL>n 6
-
-    ## Warning in sqrt(sum.squares/one.delta): 产生了NaNs
-
-    ## Warning in stats::qt(level/2 + 0.5, pred$df): 产生了NaNs
-
-![](hw-5_files/figure-gfm/unnamed-chunk-13-2.png)<!-- --> Is the sample
-average of β̂ 1 across tests for which the null is rejected
-approximately equal to the true value of β1? Why or why not?
-
 As we can see from those two plots, sample average of \(\hat\beta_1\)
 for which the null is rejected is not equal to the true value of
-\(\beta_1\), and always higher than the true value of \(\beta_1\).
-However, at certain point, in our example approximately when \(\beta_1\)
-equals to 6, the sample average of \(\hat\beta_1\) is approximately
-equals to the true value of \(\beta_1\). This can be explained by the
-power.
+\(\beta_1\), and the sample average is always higher than the true value
+of \(\beta_1\). However, at certain point, in our example approximately
+when \(\beta_1\) equals to 6, the sample average of \(\hat\beta_1\) is
+approximately equals to the true value of \(\beta_1\). This can be
+explained by the power and the increase of effective size that as true
+value of \(\beta_1\) increases, the probability of the sample to reject
+the null hypothesis(\(\beta_1=0\)) given that the null hypothesis is
+false increases. Since the estimates follow normal distribution, as
+sample size increases, the sample mean became a good estimation, then
+the average of estimation would be approximately equals to the true
+value.
