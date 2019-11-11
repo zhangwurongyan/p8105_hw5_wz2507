@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## problem 1
 
-```{r}
+```{r,message=FALSE}
 library(tidyverse)
 library(ggplot2)
 library(ggridges)
@@ -114,7 +114,8 @@ sim_regression= function(beta1,n=30, beta0=2,sigma_squared=50){
 ```{r}
 #generate 10000 datasets from the model
 sim_results=
-  rerun(10000, sim_regression(beta1=0)) %>%bind_rows()
+  rerun(10000, sim_regression(beta1=0)) %>%
+  bind_rows()
 ```
 
 ```{r, warning=FALSE}
@@ -130,7 +131,10 @@ sim_results16=
 sim_results16 %>% 
   group_by(beta1) %>% 
   summarise(total=n(),
-            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+geom_smooth(color="red")+labs(title = "Association between effect size and power", x= "effect size(beta 1)", y= "power")
+            alpha=sum(p.value<0.05)/total) %>% ggplot(aes(y=alpha, x=beta1)) +geom_point()+
+  geom_smooth(color="red")+
+  labs( title = "Association between effect size and power", 
+              x= "effect size(beta 1)", y= "power")
 
   
 ```
@@ -144,6 +148,7 @@ average =
               values_from = estimate) %>% 
   group_by(beta1) %>% 
   summarise(avg_beta=mean(beta1_hat))
+
 ```
 
 ```{r}
@@ -151,6 +156,14 @@ null_reject =
   sim_results16 %>% 
   pivot_wider(names_from = term,
               values_from = estimate) %>% filter(p.value<0.05) %>% group_by(beta1) %>% summarise(avg_beta_null=mean(beta1_hat))
+
+# average estimation 
+average %>% 
+  knitr::kable()
+
+# average estimation of rejected data
+null_reject %>% 
+  knitr::kable()
 ```
 
 ```{r,message=FALSE, warning=FALSE}
@@ -160,11 +173,11 @@ plot2=null_reject %>% ggplot(aes(x=beta1, y=avg_beta_null))+ geom_point()+geom_s
 
 grid.arrange(plot1,plot2, nrow = 1)
 
+
 ```
 
 
-As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and the sample average is always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power and the increase of effective size that as true value of $\beta_1$ increases, the probability of the sample to reject the null hypothesis($\beta_1=0$) given that the null hypothesis is false increases. Therefore smaller average $\hat\beta_1$ is needed in order to reject the null hypothesis.
-
+As we can see from those two plots, sample average of $\hat\beta_1$ for which the null is rejected is not equal to the true value of $\beta_1$, and the sample average is always higher than the true value of $\beta_1$. However, at certain point, in our example approximately when $\beta_1$ equals to 6, the sample average of $\hat\beta_1$ is approximately equals to the true value of $\beta_1$. This can be explained by the power and the increase of effective size that as true value of $\beta_1$ increases, the probability of the sample to reject the null hypothesis($\beta_1=0$) given that the null hypothesis is false increases. Since the estimates follow normal distribution, as sample size increases, the sample mean became a good estimation, then the average of estimation would be approximately equals to the true value. 
 
 
 
